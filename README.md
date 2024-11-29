@@ -1,1 +1,1 @@
-## Algorithms Part 1 projects homework.
+## Priceton Algorithms Part 1 projects assignment.
