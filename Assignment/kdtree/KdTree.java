@@ -4,12 +4,13 @@
  *  Description: A mutable data type that uses a 2d-tree to implement the same API.
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
 
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.ArrayList;
+import java.util.List;
 
 public class KdTree {
     private Node root;
@@ -67,9 +68,18 @@ public class KdTree {
                 x.lb = insert(p, x.lb, Y,
                               new RectHV(rect.xmin(), rect.ymin(), x.p.x(), rect.ymax()));
             }
-            else {
+            else if (cmp > 0) {
                 x.rt = insert(p, x.rt, Y,
                               new RectHV(x.p.x(), rect.ymin(), rect.xmax(), rect.ymax()));
+            }
+            else {
+                if (p.y() == x.p.y()) {
+                    return x;
+                }
+                else {
+                    x.rt = insert(p, x.rt, Y,
+                                  new RectHV(x.p.x(), rect.ymin(), rect.xmax(), rect.ymax()));
+                }
             }
         }
         else {
@@ -78,9 +88,18 @@ public class KdTree {
                 x.lb = insert(p, x.lb, X,
                               new RectHV(rect.xmin(), rect.ymin(), rect.xmax(), x.p.y()));
             }
-            else {
+            else if (cmp > 0) {
                 x.rt = insert(p, x.rt, X,
                               new RectHV(rect.xmin(), x.p.y(), rect.xmax(), rect.ymax()));
+            }
+            else {
+                if (p.x() == x.p.x()) {
+                    return x;
+                }
+                else {
+                    x.rt = insert(p, x.rt, X,
+                                  new RectHV(rect.xmin(), x.p.y(), rect.xmax(), rect.ymax()));
+                }
             }
         }
         return x;
@@ -155,12 +174,12 @@ public class KdTree {
         if (rect == null) {
             throw new IllegalArgumentException();
         }
-        Set<Point2D> points = new TreeSet<>();
+        List<Point2D> points = new ArrayList<>();
         rangeHelper(rect, root, X, points);
         return points;
     }
 
-    private void rangeHelper(RectHV rect, Node x, boolean dim, Set<Point2D> points) {
+    private void rangeHelper(RectHV rect, Node x, boolean dim, List<Point2D> points) {
         if (x == null) {
             return;
         }
@@ -199,6 +218,7 @@ public class KdTree {
             throw new IllegalArgumentException();
         }
         minDist = Double.MAX_VALUE;
+        nearestPoint = null;
         nearestHelper(p, root, X);
         return nearestPoint;
     }
@@ -210,7 +230,7 @@ public class KdTree {
         }
         if (x.p.distanceTo(p) < minDist) {
             minDist = x.p.distanceTo(p);
-            nearestPoint = p;
+            nearestPoint = x.p;
         }
         if (dim) {
             if (p.x() < x.p.x()) {
@@ -243,18 +263,18 @@ public class KdTree {
     }
 
     public static void main(String[] args) {
+        // initialize the two data structures with point from file
+        String filename = args[0];
+        In in = new In(filename);
         KdTree kdtree = new KdTree();
-        kdtree.insert(new Point2D(0.7, 0.2));
-        System.out.println(kdtree.size());
-        System.out.println(kdtree.contains(new Point2D(0.7, 0.2)));
-
-        kdtree.insert(new Point2D(0.5, 0.4));
-        System.out.println(kdtree.size());
-        System.out.println(kdtree.contains(new Point2D(0.5, 0.4)));
-
-        kdtree.insert(new Point2D(0.2, 0.3));
-        kdtree.insert(new Point2D(0.4, 0.7));
-        kdtree.insert(new Point2D(0.9, 0.6));
-        kdtree.draw();
+        while (!in.isEmpty()) {
+            double x = in.readDouble();
+            double y = in.readDouble();
+            Point2D p = new Point2D(x, y);
+            kdtree.insert(p);
+        }
+        Point2D query = new Point2D(0.53, 0.78);
+        StdDraw.setPenColor(StdDraw.BLUE);
+        kdtree.nearest(query).draw();
     }
 }
